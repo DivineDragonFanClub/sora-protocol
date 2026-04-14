@@ -11,6 +11,10 @@ use crate::error::RpcError;
 pub enum RegistryError {
     #[error("Namespace already registered: {0}")]
     NamespaceAlreadyExists(String),
+    #[error("Namespace id {0} already taken")]
+    NamespaceIdTaken(u16),
+    #[error("Namespace id {0} is out of range (must be 1..=255)")]
+    NamespaceIdOutOfRange(u16),
     #[error("Command name '{name}' already registered at {existing}")]
     DuplicateCommandName { name: String, existing: CommandId },
     #[error("Namespace {0} not found")]
@@ -108,6 +112,35 @@ impl CommandRegistry {
             return Err(RegistryError::NamespaceExhausted);
         }
         self.next_plugin_namespace += 1;
+
+        self.namespaces.insert(
+            id,
+            Namespace {
+                name: name.clone(),
+                handlers: BTreeMap::new(),
+                next_command_id: 0,
+            },
+        );
+        self.namespace_names.insert(name, id);
+
+        Ok(id)
+    }
+    
+    pub fn register_namespace_at(
+        &mut self,
+        id: u16,
+        name: impl Into<String>,
+    ) -> Result<u16, RegistryError> {
+        if id == 0 || id >= Self::PLUGIN_NAMESPACE_START {
+            return Err(RegistryError::NamespaceIdOutOfRange(id));
+        }
+        let name = name.into();
+        if self.namespace_names.contains_key(&name) {
+            return Err(RegistryError::NamespaceAlreadyExists(name));
+        }
+        if self.namespaces.contains_key(&id) {
+            return Err(RegistryError::NamespaceIdTaken(id));
+        }
 
         self.namespaces.insert(
             id,
