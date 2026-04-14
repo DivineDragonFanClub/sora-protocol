@@ -1,0 +1,13 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/protocol",
+    "crates/codecs",
+    "crates/server",
+    "crates/client",
+    "crates/transports",
+]
+
+[workspace.package]
+edition = "2021"
+license = "MIT OR Apache-2.0"

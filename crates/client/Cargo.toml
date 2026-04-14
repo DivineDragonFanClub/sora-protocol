@@ -1,0 +1,11 @@
+[package]
+name = "sora-client"
+version = "0.1.0"
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+sora-protocol = { path = "../protocol" }
+serde = { version = "1", features = ["derive"] }
+thiserror = "2"
+log = "0.4"
